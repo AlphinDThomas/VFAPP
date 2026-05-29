@@ -1,4 +1,4 @@
-# Freddy Finance App — Design Document
+# Fam Finance App — Design Document
 
 > **Source:** Stitch Project "Interactive 3D Particle Globe" (`projects/11338038450918731363`)
 > **Design System:** Celestial Monochrome
@@ -8,7 +8,7 @@
 
 ## 1. App Overview
 
-**Freddy** is a premium personal finance management app. The design aesthetic is futuristic, cinematic, and immersive — a hybrid of **Minimalism** and **Atmospheric Glassmorphism**. It should feel like a high-end console from a near-future spacecraft: functional, clean, and ethereal.
+**Fam** is a premium personal finance management app. The design aesthetic is futuristic, cinematic, and immersive — a hybrid of **Minimalism** and **Atmospheric Glassmorphism**. It should feel like a high-end console from a near-future spacecraft: functional, clean, and ethereal.
 
 The entire interface is **strictly monochromatic** (pure black + pure white). Depth and hierarchy come from **translucency, backdrop blurs, glow effects, and particle textures** — never from color.
 
@@ -120,20 +120,20 @@ The entire interface is **strictly monochromatic** (pure black + pure white). De
 | File               | Screen Title                      | Status |
 |--------------------|-----------------------------------|--------|
 | `herosection.html` | Aetheris — Interactive Particle Sphere (Landing/Hero) | ✅ Done |
-| `signin.html`      | Freddy — Sign In                  | ✅ Done |
+| `signin.html`      | Fam — Sign In                  | ✅ Done |
 
 ### 4.2 Screens To Build (from Stitch)
 
 | # | Screen Title                   | Target File            | Stitch Screen ID                         | Description |
 |---|-------------------------------|------------------------|------------------------------------------|-------------|
-| 1 | **Freddy — Main Dashboard**    | `dashboard.html`       | `2d64b9dc201d448d959e114a851c4277`       | Core financial overview. Balance cards, recent transactions summary, quick actions, mini charts. |
-| 2 | **Freddy — Transaction History** | `transactions.html`  | `df36d090de2b48c0813897a345d308bc`       | Full transaction list with search, filters (date, category, type), sort options. |
-| 3 | **Freddy — Add Expense**       | `add-expense.html`     | `91786ec502a348418a060449f4c6f598`       | Form to log a new expense. Category picker, amount, date, notes, recurring toggle. |
-| 4 | **Freddy — Add Income**        | `add-income.html`      | `edd69068956646a8a758b9ae9f2392bf`       | Form to log new income. Source, amount, date, notes. |
-| 5 | **Freddy — Savings Goals**     | `savings.html`         | `722aa169a1d140d9930262b663487739`       | Savings targets with progress bars, goal cards, add new goal. |
-| 6 | **Freddy — Budget Management** | `budgets.html`         | `c8a806eaf7e74429ace55334fa0d194d`       | Budget allocation per category, spent vs. remaining, doughnut/bar charts. |
-| 7 | **Freddy — Analytics & Insights** | `analytics.html`    | `0b88da850fc442ac9602283210e31752`       | Spending trends, income vs expense charts, category breakdowns, insights cards. |
-| 8 | **Freddy — Account Settings**  | `settings.html`        | `a6f0fe93b0d44633b802d1c43456bacd`       | Profile info, notification preferences, security (change password), appearance toggle, data export. |
+| 1 | **Fam — Main Dashboard**    | `dashboard.html`       | `2d64b9dc201d448d959e114a851c4277`       | Core financial overview. Balance cards, recent transactions summary, quick actions, mini charts. |
+| 2 | **Fam — Transaction History** | `transactions.html`  | `df36d090de2b48c0813897a345d308bc`       | Full transaction list with search, filters (date, category, type), sort options. |
+| 3 | **Fam — Add Expense**       | `add-expense.html`     | `91786ec502a348418a060449f4c6f598`       | Form to log a new expense. Category picker, amount, date, notes, recurring toggle. |
+| 4 | **Fam — Add Income**        | `add-income.html`      | `edd69068956646a8a758b9ae9f2392bf`       | Form to log new income. Source, amount, date, notes. |
+| 5 | **Fam — Savings Goals**     | `savings.html`         | `722aa169a1d140d9930262b663487739`       | Savings targets with progress bars, goal cards, add new goal. |
+| 6 | **Fam — Budget Management** | `budgets.html`         | `c8a806eaf7e74429ace55334fa0d194d`       | Budget allocation per category, spent vs. remaining, doughnut/bar charts. |
+| 7 | **Fam — Analytics & Insights** | `analytics.html`    | `0b88da850fc442ac9602283210e31752`       | Spending trends, income vs expense charts, category breakdowns, insights cards. |
+| 8 | **Fam — Account Settings**  | `settings.html`        | `a6f0fe93b0d44633b802d1c43456bacd`       | Profile info, notification preferences, security (change password), appearance toggle, data export. |
 
 ---
 
@@ -165,11 +165,11 @@ dashboard.html (Main Hub)
 ## 6. File Structure (Target)
 
 ```
-FREDDYS FINANCE APP/
+Fam FINANCE APP/
 ├── DESIGN.md                ← This file
 ├── README.md
 ├── herosection.html         ✅ Landing page with 3D particle sphere
-├── signin.html              ✅ Authentication page (hardcoded: freddy/freddy)
+├── signin.html              ✅ Authentication page (hardcoded: Fam/Fam)
 ├── dashboard.html           🔲 Main dashboard
 ├── transactions.html        🔲 Transaction history
 ├── add-expense.html         🔲 Add expense form
@@ -191,7 +191,7 @@ All dashboard pages (everything except `herosection.html` and `signin.html`) sha
 │  Fixed Sidebar (240px)  │      Main Content Area      │
 │                         │                             │
 │  ┌─────────────────┐    │  ┌───────────────────────┐  │
-│  │  Logo: Freddy   │    │  │  Top Bar (breadcrumb  │  │
+│  │  Logo: Fam   │    │  │  Top Bar (breadcrumb  │  │
 │  │                 │    │  │  + user avatar)        │  │
 │  │  ─────────────  │    │  └───────────────────────┘  │
 │  │  📊 Dashboard   │    │                             │
@@ -216,10 +216,10 @@ All dashboard pages (everything except `herosection.html` and `signin.html`) sha
 
 ## 8. Auth Flow
 
-1. `signin.html` validates against hardcoded credentials (`freddy` / `freddy`)
-2. On success → `sessionStorage.setItem('freddy_authenticated', 'true')`
+1. `signin.html` validates against hardcoded credentials (`Fam` / `Fam`)
+2. On success → `sessionStorage.setItem('Fam_authenticated', 'true')`
 3. Redirects to `dashboard.html`
-4. All dashboard pages check `sessionStorage.getItem('freddy_authenticated')`
+4. All dashboard pages check `sessionStorage.getItem('Fam_authenticated')`
    - If not authenticated → redirect to `signin.html`
 5. Sign out → `sessionStorage.clear()` → redirect to `herosection.html`
 

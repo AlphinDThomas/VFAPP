@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Freddy | Analytics</title>
+  <title>Fam | Analytics</title>
   <link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin href="https://fonts.gstatic.com" rel="preconnect"/>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet"/>
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
@@ -18,11 +18,11 @@
       if (!(await checkAuth())) return;
 
       const app = document.getElementById('app');
-      const fmt = FreddyData.formatCurrency;
-      const stats = await FreddyData.getTransactionStats();
-      const spending = await FreddyData.getSpendingByCategory();
-      const monthly = await FreddyData.getMonthlyTotals(6);
-      const txns = await FreddyData.getTransactions();
+      const fmt = FamData.formatCurrency;
+      const stats = await FamData.getTransactionStats();
+      const spending = await FamData.getSpendingByCategory();
+      const monthly = await FamData.getMonthlyTotals(6);
+      const txns = await FamData.getTransactions();
 
       const avgExpense = txns.filter(t => t.type === 'expense').length > 0
         ? txns.filter(t => t.type === 'expense').reduce((s,t) => s + t.amount, 0) / txns.filter(t => t.type === 'expense').length : 0;

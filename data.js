@@ -1,8 +1,8 @@
 /* ══════════════════════════════════════════════════════════════
-   FREDDY FINANCE — Data Layer (Supabase Backend)
+   Fam FINANCE — Data Layer (Supabase Backend)
    ══════════════════════════════════════════════════════════════ */
 
-const FreddyData = (() => {
+const FamData = (() => {
 
   // ── Category definitions (static, no DB needed) ─────────────
   const EXPENSE_CATEGORIES = [
@@ -296,7 +296,7 @@ async function checkAuth() {
     return false;
   }
   // Pre-load profile for currency formatting
-  await FreddyData.getSettings();
+  await FamData.getSettings();
   return true;
 }
 
@@ -316,7 +316,7 @@ function buildSidebar(activePage) {
   ];
   return `
     <aside class="sidebar" id="sidebar">
-      <div class="sidebar-logo">Freddy</div>
+      <div class="sidebar-logo">Fam</div>
       <nav class="sidebar-nav">
         ${links.map(l => `
           <a href="${l.page}.html" class="sidebar-link ${activePage === l.page ? 'active' : ''}">
@@ -343,7 +343,7 @@ function buildSidebar(activePage) {
 
 function buildTopbar(title) {
   const today = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
-  const initial = (FreddyData._cachedProfile?.displayName || 'U').charAt(0).toUpperCase();
+  const initial = (FamData._cachedProfile?.displayName || 'U').charAt(0).toUpperCase();
   return `
     <header class="topbar">
       <div style="display:flex;align-items:center;gap:12px">

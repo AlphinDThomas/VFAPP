@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Freddy | Savings Goals</title>
+  <title>Fam | Savings Goals</title>
   <link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin href="https://fonts.gstatic.com" rel="preconnect"/>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet"/>
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
@@ -22,8 +22,8 @@
 
     async function render() {
       const app = document.getElementById('app');
-      const fmt = FreddyData.formatCurrency;
-      const goals = await FreddyData.getSavings();
+      const fmt = FamData.formatCurrency;
+      const goals = await FamData.getSavings();
       const totalSaved = goals.reduce((s, g) => s + g.current, 0);
       const totalTarget = goals.reduce((s, g) => s + g.target, 0);
 
@@ -98,16 +98,16 @@
         const current = parseFloat(document.getElementById('g-current').value) || 0;
         const deadline = document.getElementById('g-deadline').value || null;
         if (!name || !target || target <= 0) { showToast('Please fill required fields', 'error'); return; }
-        await FreddyData.addSaving({ name, target, current, deadline, icon: 'flag' });
+        await FamData.addSaving({ name, target, current, deadline, icon: 'flag' });
         closeModal(); showToast('Goal created!'); await render();
       });
     }
 
     async function openContribute(id) {
-      const goals = await FreddyData.getSavings();
+      const goals = await FamData.getSavings();
       const goal = goals.find(g => g.id === id);
       if (!goal) return;
-      const fmt = FreddyData.formatCurrency;
+      const fmt = FamData.formatCurrency;
       openModal(`
         <div class="modal-title">Contribute to "${goal.name}"</div>
         <p class="modal-text">Current: ${fmt(goal.current)} / ${fmt(goal.target)}</p>
@@ -120,14 +120,14 @@
         e.preventDefault();
         const amount = parseFloat(document.getElementById('c-amount').value);
         if (!amount || amount <= 0) { showToast('Enter a valid amount', 'error'); return; }
-        await FreddyData.contributeSaving(id, amount);
+        await FamData.contributeSaving(id, amount);
         closeModal(); showToast(`${fmt(amount)} added to "${goal.name}"!`); await render();
       });
     }
 
     async function deleteGoal(id) {
       if (confirm('Delete this savings goal?')) {
-        await FreddyData.deleteSaving(id);
+        await FamData.deleteSaving(id);
         showToast('Goal deleted'); await render();
       }
     }

@@ -1,5 +1,5 @@
 -- ══════════════════════════════════════════════════════════════
--- FREDDY FINANCE — Supabase Schema
+-- Fam FINANCE — Supabase Schema
 -- Run this entire file in the Supabase SQL Editor (one shot)
 -- ══════════════════════════════════════════════════════════════
 

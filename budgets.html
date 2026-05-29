@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Freddy | Budget Management</title>
+  <title>Fam | Budget Management</title>
   <link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin href="https://fonts.gstatic.com" rel="preconnect"/>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet"/>
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
@@ -22,8 +22,8 @@
 
     async function render() {
       const app = document.getElementById('app');
-      const fmt = FreddyData.formatCurrency;
-      const budgets = await FreddyData.getBudgetSpending();
+      const fmt = FamData.formatCurrency;
+      const budgets = await FamData.getBudgetSpending();
       const totalBudget = budgets.reduce((s, b) => s + b.limit, 0);
       const totalSpent = budgets.reduce((s, b) => s + b.spent, 0);
 
@@ -72,8 +72,8 @@
     document.getElementById('modal-overlay').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal(); });
 
     async function openAddBudget() {
-      const existing = (await FreddyData.getBudgets()).map(b => b.category);
-      const available = FreddyData.EXPENSE_CATEGORIES.filter(c => !existing.includes(c.id));
+      const existing = (await FamData.getBudgets()).map(b => b.category);
+      const available = FamData.EXPENSE_CATEGORIES.filter(c => !existing.includes(c.id));
       if (available.length === 0) { showToast('All categories have budgets', 'error'); return; }
       openModal(`
         <div class="modal-title">New Budget</div>
@@ -88,7 +88,7 @@
         const category = document.getElementById('b-cat').value;
         const limit = parseFloat(document.getElementById('b-limit').value);
         if (!category || !limit || limit <= 0) { showToast('Fill all fields correctly', 'error'); return; }
-        await FreddyData.addBudget({ category, limit, period: 'monthly' });
+        await FamData.addBudget({ category, limit, period: 'monthly' });
         closeModal(); showToast('Budget created!'); await render();
       });
     }
@@ -105,12 +105,12 @@
         e.preventDefault();
         const limit = parseFloat(document.getElementById('e-limit').value);
         if (!limit || limit <= 0) { showToast('Enter a valid limit', 'error'); return; }
-        await FreddyData.updateBudget(id, { limit });
+        await FamData.updateBudget(id, { limit });
         closeModal(); showToast('Budget updated!'); await render();
       });
     }
 
-    async function delBudget(id) { if (confirm('Delete this budget?')) { await FreddyData.deleteBudget(id); showToast('Budget deleted'); await render(); } }
+    async function delBudget(id) { if (confirm('Delete this budget?')) { await FamData.deleteBudget(id); showToast('Budget deleted'); await render(); } }
   </script>
 </body>
 </html>

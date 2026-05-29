@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Freddy | Settings</title>
+  <title>Fam | Settings</title>
   <link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin href="https://fonts.gstatic.com" rel="preconnect"/>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet"/>
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
@@ -25,7 +25,7 @@
 
     async function render() {
       const app = document.getElementById('app');
-      const s = await FreddyData.getSettings();
+      const s = await FamData.getSettings();
       app.innerHTML = `
         ${buildSidebar('settings')}
         <main class="main-content">
@@ -130,7 +130,7 @@
           const currency = document.getElementById('p-currency').value;
           if (!name || !email) { showToast('Fill all fields', 'error'); return; }
           const symbols = { USD: '$', EUR: '€', GBP: '£', INR: '₹', JPY: '¥' };
-          await FreddyData.updateSettings({ displayName: name, email, currency, currencySymbol: symbols[currency] || '$' });
+          await FamData.updateSettings({ displayName: name, email, currency, currencySymbol: symbols[currency] || '$' });
           showToast('Profile updated!');
         });
       }
@@ -151,24 +151,24 @@
     }
 
     async function togglePref(key, value) {
-      const s = await FreddyData.getSettings();
+      const s = await FamData.getSettings();
       s.notifications[key] = value;
-      await FreddyData.updateSettings({ notifications: s.notifications });
+      await FamData.updateSettings({ notifications: s.notifications });
       showToast(`${key} notifications ${value ? 'enabled' : 'disabled'}`);
     }
 
     async function exportData() {
       const data = {
-        transactions: await FreddyData.getTransactions(),
-        budgets: await FreddyData.getBudgets(),
-        savings: await FreddyData.getSavings(),
-        settings: await FreddyData.getSettings(),
+        transactions: await FamData.getTransactions(),
+        budgets: await FamData.getBudgets(),
+        savings: await FamData.getSavings(),
+        settings: await FamData.getSettings(),
         exportedAt: new Date().toISOString()
       };
       const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
-      a.href = url; a.download = `freddy-export-${new Date().toISOString().split('T')[0]}.json`;
+      a.href = url; a.download = `Fam-export-${new Date().toISOString().split('T')[0]}.json`;
       a.click(); URL.revokeObjectURL(url);
       showToast('Data exported!');
     }
@@ -187,7 +187,7 @@
     }
 
     async function confirmReset() {
-      await FreddyData.resetAllData();
+      await FamData.resetAllData();
       document.getElementById('modal-overlay').classList.remove('open');
       showToast('All data has been reset');
       await render(); bindFormEvents();

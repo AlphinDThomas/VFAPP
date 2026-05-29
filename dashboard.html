@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Freddy | Dashboard</title>
+  <title>Fam | Dashboard</title>
   <link href="https://fonts.googleapis.com" rel="preconnect"/>
   <link crossorigin href="https://fonts.gstatic.com" rel="preconnect"/>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet"/>
@@ -20,10 +20,10 @@
       if (!(await checkAuth())) return;
 
       const app = document.getElementById('app');
-      const stats = await FreddyData.getTransactionStats();
-      const recent = (await FreddyData.getTransactions()).slice(0, 7);
-      const spending = (await FreddyData.getSpendingByCategory()).slice(0, 5);
-      const fmt = FreddyData.formatCurrency;
+      const stats = await FamData.getTransactionStats();
+      const recent = (await FamData.getTransactions()).slice(0, 7);
+      const spending = (await FamData.getSpendingByCategory()).slice(0, 5);
+      const fmt = FamData.formatCurrency;
 
       app.innerHTML = `
         ${buildSidebar('dashboard')}
@@ -65,7 +65,7 @@
                 ${recent.length === 0 ? '<div class="empty-state"><span class="material-symbols-outlined">receipt_long</span><p>No transactions yet. Add your first one!</p></div>' :
                   recent.map(t => {
                     const isIncome = t.type === 'income';
-                    const cats = isIncome ? FreddyData.INCOME_SOURCES : FreddyData.EXPENSE_CATEGORIES;
+                    const cats = isIncome ? FamData.INCOME_SOURCES : FamData.EXPENSE_CATEGORIES;
                     const cat = cats.find(c => c.id === t.category) || { icon: 'more_horiz', name: t.category };
                     return `<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border-subtle)">
                       <div style="display:flex;align-items:center;gap:12px">
@@ -74,7 +74,7 @@
                         </div>
                         <div>
                           <div style="font-size:14px;color:var(--text-primary)">${t.description}</div>
-                          <div style="font-size:12px;color:var(--text-dim)">${FreddyData.formatDate(t.date)}</div>
+                          <div style="font-size:12px;color:var(--text-dim)">${FamData.formatDate(t.date)}</div>
                         </div>
                       </div>
                       <div style="font-size:14px;font-weight:500;color:${isIncome ? 'var(--success)' : 'var(--error)'}">
@@ -114,7 +114,7 @@
       canvas.width = canvas.offsetWidth * 2; canvas.height = 400;
       ctx.scale(2, 2);
       const cw = canvas.offsetWidth, ch = 200;
-      const data = await FreddyData.getMonthlyTotals(6);
+      const data = await FamData.getMonthlyTotals(6);
       const maxVal = Math.max(...data.map(d => Math.max(d.income, d.expense)), 1);
       const barW = cw / data.length / 3;
       const padding = 40;
