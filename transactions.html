@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Freddy | Transactions</title>
+  <link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin href="https://fonts.gstatic.com" rel="preconnect"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <link href="styles.css" rel="stylesheet"/>
+</head>
+<body>
+  <div class="app-layout" id="app"><div style="display:flex;align-items:center;justify-content:center;min-height:100vh;width:100%;color:var(--text-dim)">Loading...</div></div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-client.js"></script>
+  <script src="data.js"></script>
+  <script>
+    let filterType = 'all', filterCat = 'all', searchQuery = '', sortBy = 'date-desc';
+    let _allTxns = [];
+
+    (async () => {
+      if (!(await checkAuth())) return;
+      _allTxns = await FreddyData.getTransactions();
+      render();
+    })();
+
+    function render() {
+      const app = document.getElementById('app');
+      const fmt = FreddyData.formatCurrency;
+      let txns = [..._allTxns];
+
+      if (filterType !== 'all') txns = txns.filter(t => t.type === filterType);
+      if (filterCat !== 'all') txns = txns.filter(t => t.category === filterCat);
+      if (searchQuery) txns = txns.filter(t => t.description.toLowerCase().includes(searchQuery.toLowerCase()));
+
+      if (sortBy === 'date-desc') txns.sort((a, b) => new Date(b.date) - new Date(a.date));
+      else if (sortBy === 'date-asc') txns.sort((a, b) => new Date(a.date) - new Date(b.date));
+      else if (sortBy === 'amount-desc') txns.sort((a, b) => b.amount - a.amount);
+      else if (sortBy === 'amount-asc') txns.sort((a, b) => a.amount - b.amount);
+
+      app.innerHTML = `
+        ${buildSidebar('transactions')}
+        <main class="main-content">
+          ${buildTopbar('Transactions')}
+          <div class="page-content">
+            <div class="page-header">
+              <h1>Transaction History</h1>
+              <div style="display:flex;gap:8px">
+                <a href="add-expense.html" class="btn btn-primary btn-sm"><span class="material-symbols-outlined" style="font-size:14px">remove</span> Expense</a>
+                <a href="add-income.html" class="btn btn-secondary btn-sm"><span class="material-symbols-outlined" style="font-size:14px">add</span> Income</a>
+              </div>
+            </div>
+            <div class="card" style="margin-bottom:24px;padding:16px 20px">
+              <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center">
+                <div class="search-bar" style="flex:1;min-width:200px">
+                  <span class="material-symbols-outlined">search</span>
+                  <input class="form-input" id="search" type="text" placeholder="Search transactions..." value="${searchQuery}"/>
+                </div>
+                <select class="form-select" id="filter-type" style="width:auto;min-width:140px">
+                  <option value="all" ${filterType==='all'?'selected':''}>All Types</option>
+                  <option value="income" ${filterType==='income'?'selected':''}>Income</option>
+                  <option value="expense" ${filterType==='expense'?'selected':''}>Expenses</option>
+                </select>
+                <select class="form-select" id="filter-cat" style="width:auto;min-width:160px">
+                  <option value="all">All Categories</option>
+                  ${FreddyData.EXPENSE_CATEGORIES.map(c => `<option value="${c.id}" ${filterCat===c.id?'selected':''}>${c.name}</option>`).join('')}
+                  ${FreddyData.INCOME_SOURCES.map(c => `<option value="${c.id}" ${filterCat===c.id?'selected':''}>${c.name}</option>`).join('')}
+                </select>
+                <select class="form-select" id="sort-by" style="width:auto;min-width:150px">
+                  <option value="date-desc" ${sortBy==='date-desc'?'selected':''}>Newest First</option>
+                  <option value="date-asc" ${sortBy==='date-asc'?'selected':''}>Oldest First</option>
+                  <option value="amount-desc" ${sortBy==='amount-desc'?'selected':''}>Highest Amount</option>
+                  <option value="amount-asc" ${sortBy==='amount-asc'?'selected':''}>Lowest Amount</option>
+                </select>
+              </div>
+            </div>
+            <p style="font-size:13px;color:var(--text-dim);margin-bottom:16px">${txns.length} transaction${txns.length !== 1 ? 's' : ''} found</p>
+            <div class="card" style="padding:0;overflow:hidden">
+              ${txns.length === 0 ? '<div class="empty-state"><span class="material-symbols-outlined">search_off</span><p>No transactions match your filters</p></div>' : `
+              <div class="table-wrap">
+                <table>
+                  <thead><tr><th>Date</th><th>Description</th><th>Category</th><th>Type</th><th style="text-align:right">Amount</th><th style="width:50px"></th></tr></thead>
+                  <tbody>
+                    ${txns.map(t => {
+                      const isIncome = t.type === 'income';
+                      const cats = isIncome ? FreddyData.INCOME_SOURCES : FreddyData.EXPENSE_CATEGORIES;
+                      const cat = cats.find(c => c.id === t.category) || { name: t.category, icon: 'more_horiz' };
+                      return `<tr>
+                        <td style="white-space:nowrap">${FreddyData.formatDate(t.date)}</td>
+                        <td><div style="display:flex;align-items:center;gap:8px"><span style="font-size:14px;color:var(--text-primary)">${t.description}</span>${t.recurring ? '<span style="font-size:10px;background:rgba(255,255,255,0.08);padding:2px 6px;border-radius:9999px;color:var(--text-dim)">Recurring</span>' : ''}</div></td>
+                        <td><div style="display:flex;align-items:center;gap:6px"><span class="material-symbols-outlined" style="font-size:16px;color:var(--text-dim)">${cat.icon}</span>${cat.name}</div></td>
+                        <td><span class="badge ${isIncome ? 'badge-income' : 'badge-expense'}">${t.type}</span></td>
+                        <td style="text-align:right;font-weight:500;color:${isIncome ? 'var(--success)' : 'var(--error)'}">${isIncome ? '+' : '-'}${fmt(t.amount)}</td>
+                        <td><button class="btn-icon" onclick="deleteTxn('${t.id}')" title="Delete"><span class="material-symbols-outlined" style="font-size:16px">delete</span></button></td>
+                      </tr>`;
+                    }).join('')}
+                  </tbody>
+                </table>
+              </div>`}
+            </div>
+          </div>
+        </main>
+      `;
+      bindEvents();
+    }
+
+    function bindEvents() {
+      document.getElementById('search').addEventListener('input', e => { searchQuery = e.target.value; render(); });
+      document.getElementById('filter-type').addEventListener('change', e => { filterType = e.target.value; render(); });
+      document.getElementById('filter-cat').addEventListener('change', e => { filterCat = e.target.value; render(); });
+      document.getElementById('sort-by').addEventListener('change', e => { sortBy = e.target.value; render(); });
+      const s = document.getElementById('search'); s.focus(); s.setSelectionRange(s.value.length, s.value.length);
+    }
+
+    async function deleteTxn(id) {
+      if (confirm('Delete this transaction?')) {
+        await FreddyData.deleteTransaction(id);
+        _allTxns = _allTxns.filter(t => t.id !== id);
+        showToast('Transaction deleted');
+        render();
+      }
+    }
+  </script>
+</body>
+</html>

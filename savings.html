@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Freddy | Savings Goals</title>
+  <link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin href="https://fonts.gstatic.com" rel="preconnect"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <link href="styles.css" rel="stylesheet"/>
+</head>
+<body>
+  <div class="app-layout" id="app"><div style="display:flex;align-items:center;justify-content:center;min-height:100vh;width:100%;color:var(--text-dim)">Loading...</div></div>
+  <div class="modal-overlay" id="modal-overlay"><div class="modal" id="modal-content"></div></div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-client.js"></script>
+  <script src="data.js"></script>
+  <script>
+    (async () => {
+      if (!(await checkAuth())) return;
+      await render();
+    })();
+
+    async function render() {
+      const app = document.getElementById('app');
+      const fmt = FreddyData.formatCurrency;
+      const goals = await FreddyData.getSavings();
+      const totalSaved = goals.reduce((s, g) => s + g.current, 0);
+      const totalTarget = goals.reduce((s, g) => s + g.target, 0);
+
+      app.innerHTML = `
+        ${buildSidebar('savings')}
+        <main class="main-content">
+          ${buildTopbar('Savings')}
+          <div class="page-content">
+            <div class="page-header">
+              <h1>Savings Goals</h1>
+              <button class="btn btn-primary btn-sm" onclick="openAddGoal()"><span class="material-symbols-outlined" style="font-size:14px">add</span> New Goal</button>
+            </div>
+            <div class="card-grid card-grid-3" style="margin-bottom:28px">
+              <div class="card fade-in"><div class="t-label" style="color:var(--text-dim);margin-bottom:8px">Total Saved</div><div class="t-big-number">${fmt(totalSaved)}</div></div>
+              <div class="card fade-in stagger-1"><div class="t-label" style="color:var(--text-dim);margin-bottom:8px">Total Target</div><div class="t-big-number">${fmt(totalTarget)}</div></div>
+              <div class="card fade-in stagger-2"><div class="t-label" style="color:var(--text-dim);margin-bottom:8px">Overall Progress</div><div class="t-big-number">${totalTarget ? Math.round(totalSaved / totalTarget * 100) : 0}%</div><div class="progress" style="margin-top:8px"><div class="progress-fill" style="width:${totalTarget ? (totalSaved/totalTarget*100) : 0}%"></div></div></div>
+            </div>
+            <div class="card-grid card-grid-2">
+              ${goals.length === 0 ? '<div class="card empty-state" style="grid-column:1/-1"><span class="material-symbols-outlined">flag</span><p>No savings goals yet. Create your first one!</p></div>' :
+                goals.map(g => {
+                  const pct = Math.round(g.current / g.target * 100);
+                  const remaining = g.target - g.current;
+                  const daysLeft = g.deadline ? Math.max(0, Math.ceil((new Date(g.deadline) - new Date()) / 86400000)) : '∞';
+                  return `<div class="card fade-in">
+                    <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:16px">
+                      <div style="display:flex;align-items:center;gap:12px">
+                        <div style="width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:center">
+                          <span class="material-symbols-outlined" style="font-size:20px;color:var(--text-primary)">${g.icon || 'flag'}</span>
+                        </div>
+                        <div><div style="font-size:16px;font-weight:500;color:var(--text-primary)">${g.name}</div><div style="font-size:12px;color:var(--text-dim)">${daysLeft} days left</div></div>
+                      </div>
+                      <div style="display:flex;gap:4px">
+                        <button class="btn-icon" onclick="openContribute('${g.id}')" title="Contribute"><span class="material-symbols-outlined" style="font-size:16px">add</span></button>
+                        <button class="btn-icon" onclick="deleteGoal('${g.id}')" title="Delete"><span class="material-symbols-outlined" style="font-size:16px">delete</span></button>
+                      </div>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px">
+                      <span style="color:var(--text-muted)">${fmt(g.current)} saved</span>
+                      <span style="color:var(--text-primary)">${fmt(g.target)} target</span>
+                    </div>
+                    <div class="progress" style="margin-bottom:8px"><div class="progress-fill ${pct >= 100 ? '' : pct >= 50 ? 'warning' : 'danger'}" style="width:${Math.min(pct,100)}%"></div></div>
+                    <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text-dim)"><span>${pct}% complete</span><span>${fmt(remaining)} remaining</span></div>
+                  </div>`;
+                }).join('')}
+            </div>
+          </div>
+        </main>
+      `;
+    }
+
+    function openModal(html) { document.getElementById('modal-content').innerHTML = html; document.getElementById('modal-overlay').classList.add('open'); }
+    function closeModal() { document.getElementById('modal-overlay').classList.remove('open'); }
+    document.getElementById('modal-overlay').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal(); });
+
+    function openAddGoal() {
+      openModal(`
+        <div class="modal-title">New Savings Goal</div>
+        <form id="goal-form" novalidate>
+          <div class="form-group"><label class="form-label">Goal Name *</label><input class="form-input" id="g-name" placeholder="e.g. Vacation Fund" required/></div>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Target Amount *</label><input class="form-input" id="g-target" type="number" min="1" placeholder="0.00" required/></div>
+            <div class="form-group"><label class="form-label">Starting Amount</label><input class="form-input" id="g-current" type="number" min="0" value="0" placeholder="0.00"/></div>
+          </div>
+          <div class="form-group"><label class="form-label">Deadline</label><input class="form-input" id="g-deadline" type="date"/></div>
+          <div class="form-actions"><button type="submit" class="btn btn-primary" style="flex:1">Create Goal</button><button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button></div>
+        </form>
+      `);
+      document.getElementById('goal-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const name = document.getElementById('g-name').value.trim();
+        const target = parseFloat(document.getElementById('g-target').value);
+        const current = parseFloat(document.getElementById('g-current').value) || 0;
+        const deadline = document.getElementById('g-deadline').value || null;
+        if (!name || !target || target <= 0) { showToast('Please fill required fields', 'error'); return; }
+        await FreddyData.addSaving({ name, target, current, deadline, icon: 'flag' });
+        closeModal(); showToast('Goal created!'); await render();
+      });
+    }
+
+    async function openContribute(id) {
+      const goals = await FreddyData.getSavings();
+      const goal = goals.find(g => g.id === id);
+      if (!goal) return;
+      const fmt = FreddyData.formatCurrency;
+      openModal(`
+        <div class="modal-title">Contribute to "${goal.name}"</div>
+        <p class="modal-text">Current: ${fmt(goal.current)} / ${fmt(goal.target)}</p>
+        <form id="contrib-form" novalidate>
+          <div class="form-group"><label class="form-label">Amount</label><input class="form-input" id="c-amount" type="number" min="0.01" step="0.01" placeholder="0.00" required/></div>
+          <div class="form-actions"><button type="submit" class="btn btn-primary" style="flex:1">Add Funds</button><button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button></div>
+        </form>
+      `);
+      document.getElementById('contrib-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const amount = parseFloat(document.getElementById('c-amount').value);
+        if (!amount || amount <= 0) { showToast('Enter a valid amount', 'error'); return; }
+        await FreddyData.contributeSaving(id, amount);
+        closeModal(); showToast(`${fmt(amount)} added to "${goal.name}"!`); await render();
+      });
+    }
+
+    async function deleteGoal(id) {
+      if (confirm('Delete this savings goal?')) {
+        await FreddyData.deleteSaving(id);
+        showToast('Goal deleted'); await render();
+      }
+    }
+  </script>
+</body>
+</html>

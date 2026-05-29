@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Freddy | Sign In</title>
+  <link href="https://fonts.googleapis.com" rel="preconnect" />
+  <link crossorigin href="https://fonts.gstatic.com" rel="preconnect" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+  <style>
+    @font-face { font-family: 'Geist'; src: url('https://cdn.jsdelivr.net/fontsource/fonts/geist-sans@latest/latin-200-normal.woff2') format('woff2'); font-weight: 200; }
+    @font-face { font-family: 'Geist'; src: url('https://cdn.jsdelivr.net/fontsource/fonts/geist-sans@latest/latin-300-normal.woff2') format('woff2'); font-weight: 300; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #0a0a0a; color: #e2e2e2; font-family: 'Inter', sans-serif; min-height: 100vh; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+    .bg-glow { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+    .bg-glow::before { content: ''; position: absolute; top: -40%; right: -20%; width: 700px; height: 700px; border-radius: 50%; background: radial-gradient(circle, rgba(255,255,255,0.03) 0%, transparent 70%); animation: drift 20s ease-in-out infinite alternate; }
+    .bg-glow::after { content: ''; position: absolute; bottom: -30%; left: -10%; width: 500px; height: 500px; border-radius: 50%; background: radial-gradient(circle, rgba(255,255,255,0.02) 0%, transparent 70%); animation: drift 25s ease-in-out infinite alternate-reverse; }
+    @keyframes drift { from { transform: translate(0, 0) scale(1); } to { transform: translate(40px, -30px) scale(1.1); } }
+    .back-link { position: fixed; top: 2rem; left: 2.5rem; z-index: 50; display: flex; align-items: center; gap: 0.5rem; color: rgba(255,255,255,0.4); text-decoration: none; font-size: 13px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; transition: color 0.3s; }
+    .back-link:hover { color: #ffffff; }
+    .back-link .material-symbols-outlined { font-size: 18px; font-variation-settings: 'FILL' 0, 'wght' 300; transition: transform 0.3s; }
+    .back-link:hover .material-symbols-outlined { transform: translateX(-3px); }
+    .signin-card { position: relative; z-index: 10; width: 100%; max-width: 420px; padding: 3rem; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); backdrop-filter: blur(40px); -webkit-backdrop-filter: blur(40px); opacity: 0; transform: translateY(24px); animation: cardIn 0.8s ease 0.2s forwards; }
+    @keyframes cardIn { to { opacity: 1; transform: translateY(0); } }
+    .logo { font-family: 'Geist', 'Inter', sans-serif; font-weight: 200; font-size: 28px; letter-spacing: 0.04em; color: #ffffff; margin-bottom: 0.25rem; }
+    .card-subtitle { font-size: 14px; color: rgba(255,255,255,0.35); font-weight: 400; margin-bottom: 2.5rem; }
+    .form-group { margin-bottom: 1.5rem; }
+    .form-label { display: block; font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255,255,255,0.35); margin-bottom: 0.625rem; }
+    .form-input { width: 100%; padding: 0.875rem 1rem; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); color: #e2e2e2; font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 400; outline: none; transition: border-color 0.3s, box-shadow 0.3s; }
+    .form-input::placeholder { color: rgba(255,255,255,0.15); }
+    .form-input:focus { border-color: rgba(255,255,255,0.25); box-shadow: 0 0 0 3px rgba(255,255,255,0.03); }
+    .form-input.error { border-color: rgba(255,100,100,0.5); box-shadow: 0 0 0 3px rgba(255,100,100,0.05); }
+    .password-wrapper { position: relative; }
+    .password-wrapper .form-input { padding-right: 3rem; }
+    .password-toggle { position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); background: none; border: none; color: rgba(255,255,255,0.25); cursor: pointer; padding: 0.25rem; display: flex; align-items: center; transition: color 0.3s; }
+    .password-toggle:hover { color: rgba(255,255,255,0.6); }
+    .password-toggle .material-symbols-outlined { font-size: 20px; font-variation-settings: 'FILL' 0, 'wght' 300; }
+    .submit-btn { width: 100%; padding: 0.9375rem 1rem; margin-top: 0.5rem; background: #ffffff; color: #0a0a0a; font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 500; letter-spacing: 0.15em; text-transform: uppercase; border: none; cursor: pointer; transition: box-shadow 0.3s, opacity 0.3s, transform 0.15s; position: relative; overflow: hidden; }
+    .submit-btn:hover { box-shadow: 0 0 24px rgba(255,255,255,0.25); }
+    .submit-btn:active { transform: scale(0.98); opacity: 0.9; }
+    .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
+    .submit-btn .btn-text { transition: opacity 0.2s; }
+    .submit-btn .btn-loader { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s; }
+    .submit-btn.loading .btn-text { opacity: 0; }
+    .submit-btn.loading .btn-loader { opacity: 1; }
+    .spinner { width: 18px; height: 18px; border: 2px solid rgba(10,10,10,0.15); border-top-color: #0a0a0a; border-radius: 50%; animation: spin 0.6s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .error-toast { margin-top: 1.25rem; padding: 0.75rem 1rem; background: rgba(255,80,80,0.06); border: 1px solid rgba(255,80,80,0.15); color: rgba(255,140,140,0.9); font-size: 13px; font-weight: 400; display: none; align-items: center; gap: 0.5rem; opacity: 0; transform: translateY(-6px); animation: toastIn 0.35s ease forwards; }
+    .error-toast.visible { display: flex; }
+    .error-toast .material-symbols-outlined { font-size: 18px; font-variation-settings: 'FILL' 0, 'wght' 400; color: rgba(255,100,100,0.7); }
+    @keyframes toastIn { to { opacity: 1; transform: translateY(0); } }
+    .card-footer { text-align: center; font-size: 13px; color: rgba(255,255,255,0.3); margin-top: 2rem; }
+    @keyframes shake { 0%, 100% { transform: translateX(0); } 20% { transform: translateX(-8px); } 40% { transform: translateX(6px); } 60% { transform: translateX(-4px); } 80% { transform: translateX(2px); } }
+  </style>
+</head>
+<body>
+
+  <div class="bg-glow"></div>
+
+  <a class="back-link" href="herosection.html">
+    <span class="material-symbols-outlined">arrow_back</span>
+    Back
+  </a>
+
+  <div class="signin-card">
+    <div class="logo">Freddy</div>
+    <p class="card-subtitle">Sign in to your financial control center</p>
+
+    <form id="signin-form" autocomplete="off">
+      <div class="form-group">
+        <label class="form-label" for="email">Email</label>
+        <input class="form-input" id="email" type="email" placeholder="Enter your email" autocomplete="email" spellcheck="false" required />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="password">Password</label>
+        <div class="password-wrapper">
+          <input class="form-input" id="password" type="password" placeholder="Enter your password" autocomplete="current-password" required />
+          <button type="button" class="password-toggle" id="toggle-password" aria-label="Toggle password visibility">
+            <span class="material-symbols-outlined">visibility_off</span>
+          </button>
+        </div>
+      </div>
+
+      <button class="submit-btn" type="submit" id="submit-btn">
+        <span class="btn-text">Sign In</span>
+        <span class="btn-loader"><span class="spinner"></span></span>
+      </button>
+
+      <div class="error-toast" id="error-toast">
+        <span class="material-symbols-outlined">error</span>
+        <span id="error-message">Invalid credentials</span>
+      </div>
+    </form>
+
+    <p class="card-footer">Invite-only access · Contact admin for an account</p>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-client.js"></script>
+  <script>
+    // ── Check if already logged in ─────────────────────────────
+    (async () => {
+      const { data: { session } } = await _supabase.auth.getSession();
+      if (session) window.location.href = 'dashboard.html';
+    })();
+
+    // ── DOM refs ───────────────────────────────────────────────
+    const form = document.getElementById('signin-form');
+    const emailInput = document.getElementById('email');
+    const passwordInput = document.getElementById('password');
+    const submitBtn = document.getElementById('submit-btn');
+    const errorToast = document.getElementById('error-toast');
+    const errorMessage = document.getElementById('error-message');
+    const togglePassword = document.getElementById('toggle-password');
+
+    // ── Password visibility toggle ─────────────────────────────
+    togglePassword.addEventListener('click', () => {
+      const isPassword = passwordInput.type === 'password';
+      passwordInput.type = isPassword ? 'text' : 'password';
+      togglePassword.querySelector('.material-symbols-outlined').textContent =
+        isPassword ? 'visibility' : 'visibility_off';
+    });
+
+    // ── Clear error on input ───────────────────────────────────
+    [emailInput, passwordInput].forEach(input => {
+      input.addEventListener('input', () => {
+        input.classList.remove('error');
+        errorToast.classList.remove('visible');
+      });
+    });
+
+    // ── Form submit ────────────────────────────────────────────
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const email = emailInput.value.trim();
+      const password = passwordInput.value;
+
+      // Reset error states
+      emailInput.classList.remove('error');
+      passwordInput.classList.remove('error');
+      errorToast.classList.remove('visible');
+
+      // Validate empty fields
+      if (!email || !password) {
+        if (!email) emailInput.classList.add('error');
+        if (!password) passwordInput.classList.add('error');
+        showError('Please fill in all fields');
+        return;
+      }
+
+      // Validate email format
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        emailInput.classList.add('error');
+        showError('Please enter a valid email address');
+        return;
+      }
+
+      // Show loading state
+      submitBtn.classList.add('loading');
+      submitBtn.disabled = true;
+
+      try {
+        const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
+
+        if (error) {
+          submitBtn.classList.remove('loading');
+          submitBtn.disabled = false;
+          emailInput.classList.add('error');
+          passwordInput.classList.add('error');
+
+          // Map Supabase errors to user-friendly messages
+          if (error.message.includes('Invalid login credentials')) {
+            showError('Invalid email or password');
+          } else if (error.message.includes('Email not confirmed')) {
+            showError('Email not confirmed. Check your inbox.');
+          } else {
+            showError(error.message);
+          }
+
+          // Shake card
+          const card = document.querySelector('.signin-card');
+          card.style.animation = 'none';
+          card.offsetHeight;
+          card.style.animation = 'shake 0.4s ease';
+          return;
+        }
+
+        // Success — redirect to dashboard
+        window.location.href = 'dashboard.html';
+
+      } catch (err) {
+        submitBtn.classList.remove('loading');
+        submitBtn.disabled = false;
+        showError('Connection error. Please try again.');
+      }
+    });
+
+    function showError(msg) {
+      errorMessage.textContent = msg;
+      errorToast.classList.add('visible');
+    }
+
+    // ── Auto-focus email ───────────────────────────────────────
+    window.addEventListener('load', () => {
+      setTimeout(() => emailInput.focus(), 800);
+    });
+  </script>
+</body>
+</html>

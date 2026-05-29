@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Freddy | Settings</title>
+  <link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin href="https://fonts.gstatic.com" rel="preconnect"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <link href="styles.css" rel="stylesheet"/>
+</head>
+<body>
+  <div class="app-layout" id="app"><div style="display:flex;align-items:center;justify-content:center;min-height:100vh;width:100%;color:var(--text-dim)">Loading...</div></div>
+  <div class="modal-overlay" id="modal-overlay"><div class="modal" id="modal-content"></div></div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-client.js"></script>
+  <script src="data.js"></script>
+  <script>
+    let activeTab = 'profile';
+
+    (async () => {
+      if (!(await checkAuth())) return;
+      await render();
+      bindFormEvents();
+    })();
+
+    async function render() {
+      const app = document.getElementById('app');
+      const s = await FreddyData.getSettings();
+      app.innerHTML = `
+        ${buildSidebar('settings')}
+        <main class="main-content">
+          ${buildTopbar('Settings')}
+          <div class="page-content" style="max-width:800px">
+            <div class="page-header"><h1>Account Settings</h1></div>
+            <div class="tabs">
+              <button class="tab ${activeTab==='profile'?'active':''}" onclick="switchTab('profile')">Profile</button>
+              <button class="tab ${activeTab==='preferences'?'active':''}" onclick="switchTab('preferences')">Preferences</button>
+              <button class="tab ${activeTab==='security'?'active':''}" onclick="switchTab('security')">Security</button>
+              <button class="tab ${activeTab==='data'?'active':''}" onclick="switchTab('data')">Data</button>
+            </div>
+            <div id="tab-content">
+              ${activeTab === 'profile' ? renderProfile(s) :
+                activeTab === 'preferences' ? renderPreferences(s) :
+                activeTab === 'security' ? renderSecurity() :
+                renderData()}
+            </div>
+          </div>
+        </main>
+      `;
+    }
+
+    function renderProfile(s) {
+      return `<div class="card">
+        <h2 style="font-size:16px;font-weight:500;color:var(--text-primary);margin-bottom:24px">Profile Information</h2>
+        <form id="profile-form" novalidate>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Display Name</label><input class="form-input" id="p-name" value="${s.displayName}" required/></div>
+            <div class="form-group"><label class="form-label">Email</label><input class="form-input" id="p-email" type="email" value="${s.email}" required/></div>
+          </div>
+          <div class="form-group"><label class="form-label">Currency</label>
+            <select class="form-select" id="p-currency">
+              <option value="USD" ${s.currency==='USD'?'selected':''}>USD ($)</option>
+              <option value="EUR" ${s.currency==='EUR'?'selected':''}>EUR (€)</option>
+              <option value="GBP" ${s.currency==='GBP'?'selected':''}>GBP (£)</option>
+              <option value="INR" ${s.currency==='INR'?'selected':''}>INR (₹)</option>
+              <option value="JPY" ${s.currency==='JPY'?'selected':''}>JPY (¥)</option>
+            </select>
+          </div>
+          <div class="form-actions"><button type="submit" class="btn btn-primary">Save Changes</button></div>
+        </form>
+      </div>`;
+    }
+
+    function renderPreferences(s) {
+      const n = s.notifications || {};
+      return `<div class="card">
+        <h2 style="font-size:16px;font-weight:500;color:var(--text-primary);margin-bottom:24px">Notification Preferences</h2>
+        ${[
+          { key: 'email', label: 'Email Notifications', desc: 'Receive updates via email' },
+          { key: 'push', label: 'Push Notifications', desc: 'Browser push notifications' },
+          { key: 'weekly', label: 'Weekly Summary', desc: 'Get a weekly spending report' },
+          { key: 'budget', label: 'Budget Alerts', desc: 'Alert when nearing budget limits' },
+        ].map(p => `
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 0;border-bottom:1px solid var(--border-subtle)">
+            <div><div style="font-size:14px;color:var(--text-primary)">${p.label}</div><div style="font-size:12px;color:var(--text-dim)">${p.desc}</div></div>
+            <label class="toggle"><input type="checkbox" data-pref="${p.key}" ${n[p.key] ? 'checked' : ''} onchange="togglePref('${p.key}', this.checked)"/><span class="toggle-track"></span><span class="toggle-thumb"></span></label>
+          </div>
+        `).join('')}
+      </div>`;
+    }
+
+    function renderSecurity() {
+      return `<div class="card">
+        <h2 style="font-size:16px;font-weight:500;color:var(--text-primary);margin-bottom:24px">Change Password</h2>
+        <form id="pw-form" novalidate>
+          <div class="form-group"><label class="form-label">New Password</label><input class="form-input" id="pw-new" type="password" placeholder="Enter new password (min 6 chars)" required/><div class="form-error" id="pw-error"></div></div>
+          <div class="form-group"><label class="form-label">Confirm New Password</label><input class="form-input" id="pw-confirm" type="password" placeholder="Confirm new password" required/></div>
+          <div class="form-actions"><button type="submit" class="btn btn-primary">Update Password</button></div>
+        </form>
+      </div>
+      <div class="card" style="margin-top:20px;border-color:var(--error-border)">
+        <h2 style="font-size:16px;font-weight:500;color:var(--error);margin-bottom:8px">Danger Zone</h2>
+        <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px">Sign out of your account.</p>
+        <button class="btn btn-danger" onclick="signOut()"><span class="material-symbols-outlined" style="font-size:16px">logout</span> Sign Out</button>
+      </div>`;
+    }
+
+    function renderData() {
+      return `<div class="card">
+        <h2 style="font-size:16px;font-weight:500;color:var(--text-primary);margin-bottom:8px">Export Data</h2>
+        <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px">Download all your financial data as a JSON file.</p>
+        <button class="btn btn-secondary" onclick="exportData()"><span class="material-symbols-outlined" style="font-size:16px">download</span> Export JSON</button>
+      </div>
+      <div class="card" style="margin-top:20px;border-color:var(--error-border)">
+        <h2 style="font-size:16px;font-weight:500;color:var(--error);margin-bottom:8px">Reset All Data</h2>
+        <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px">This will delete all your transactions, budgets, and savings goals. This cannot be undone.</p>
+        <button class="btn btn-danger" onclick="resetData()"><span class="material-symbols-outlined" style="font-size:16px">delete_forever</span> Reset Everything</button>
+      </div>`;
+    }
+
+    async function switchTab(tab) { activeTab = tab; await render(); bindFormEvents(); }
+
+    function bindFormEvents() {
+      const profileForm = document.getElementById('profile-form');
+      if (profileForm) {
+        profileForm.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const name = document.getElementById('p-name').value.trim();
+          const email = document.getElementById('p-email').value.trim();
+          const currency = document.getElementById('p-currency').value;
+          if (!name || !email) { showToast('Fill all fields', 'error'); return; }
+          const symbols = { USD: '$', EUR: '€', GBP: '£', INR: '₹', JPY: '¥' };
+          await FreddyData.updateSettings({ displayName: name, email, currency, currencySymbol: symbols[currency] || '$' });
+          showToast('Profile updated!');
+        });
+      }
+      const pwForm = document.getElementById('pw-form');
+      if (pwForm) {
+        pwForm.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const newPw = document.getElementById('pw-new').value;
+          const confirmPw = document.getElementById('pw-confirm').value;
+          if (newPw.length < 6) { document.getElementById('pw-error').textContent = 'Min 6 characters'; document.getElementById('pw-error').classList.add('visible'); return; }
+          if (newPw !== confirmPw) { showToast('Passwords do not match', 'error'); return; }
+          const { error } = await _supabase.auth.updateUser({ password: newPw });
+          if (error) { showToast(error.message, 'error'); return; }
+          showToast('Password updated successfully!');
+          pwForm.reset();
+        });
+      }
+    }
+
+    async function togglePref(key, value) {
+      const s = await FreddyData.getSettings();
+      s.notifications[key] = value;
+      await FreddyData.updateSettings({ notifications: s.notifications });
+      showToast(`${key} notifications ${value ? 'enabled' : 'disabled'}`);
+    }
+
+    async function exportData() {
+      const data = {
+        transactions: await FreddyData.getTransactions(),
+        budgets: await FreddyData.getBudgets(),
+        savings: await FreddyData.getSavings(),
+        settings: await FreddyData.getSettings(),
+        exportedAt: new Date().toISOString()
+      };
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = `freddy-export-${new Date().toISOString().split('T')[0]}.json`;
+      a.click(); URL.revokeObjectURL(url);
+      showToast('Data exported!');
+    }
+
+    function resetData() {
+      const content = document.getElementById('modal-content');
+      content.innerHTML = `
+        <div class="modal-title">⚠️ Reset All Data?</div>
+        <p class="modal-text">This will permanently delete all your transactions, budgets, and savings goals. This action cannot be undone.</p>
+        <div class="form-actions">
+          <button class="btn btn-danger" style="flex:1" onclick="confirmReset()">Yes, Reset Everything</button>
+          <button class="btn btn-secondary" onclick="document.getElementById('modal-overlay').classList.remove('open')">Cancel</button>
+        </div>
+      `;
+      document.getElementById('modal-overlay').classList.add('open');
+    }
+
+    async function confirmReset() {
+      await FreddyData.resetAllData();
+      document.getElementById('modal-overlay').classList.remove('open');
+      showToast('All data has been reset');
+      await render(); bindFormEvents();
+    }
+
+    document.getElementById('modal-overlay').addEventListener('click', e => { if (e.target === e.currentTarget) e.target.classList.remove('open'); });
+  </script>
+</body>
+</html>

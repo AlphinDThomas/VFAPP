@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Freddy | Analytics</title>
+  <link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin href="https://fonts.gstatic.com" rel="preconnect"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <link href="styles.css" rel="stylesheet"/>
+</head>
+<body>
+  <div class="app-layout" id="app"><div style="display:flex;align-items:center;justify-content:center;min-height:100vh;width:100%;color:var(--text-dim)">Loading...</div></div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-client.js"></script>
+  <script src="data.js"></script>
+  <script>
+    (async () => {
+      if (!(await checkAuth())) return;
+
+      const app = document.getElementById('app');
+      const fmt = FreddyData.formatCurrency;
+      const stats = await FreddyData.getTransactionStats();
+      const spending = await FreddyData.getSpendingByCategory();
+      const monthly = await FreddyData.getMonthlyTotals(6);
+      const txns = await FreddyData.getTransactions();
+
+      const avgExpense = txns.filter(t => t.type === 'expense').length > 0
+        ? txns.filter(t => t.type === 'expense').reduce((s,t) => s + t.amount, 0) / txns.filter(t => t.type === 'expense').length : 0;
+      const savingsRate = stats.thisMonthIncome > 0 ? ((stats.thisMonthIncome - stats.thisMonthExpense) / stats.thisMonthIncome * 100).toFixed(1) : 0;
+      const topCat = spending[0] || { info: { name: 'N/A' }, amount: 0 };
+
+      app.innerHTML = `
+        ${buildSidebar('analytics')}
+        <main class="main-content">
+          ${buildTopbar('Analytics')}
+          <div class="page-content">
+            <div class="page-header"><h1>Analytics & Insights</h1></div>
+            <div class="card-grid card-grid-4" style="margin-bottom:28px">
+              <div class="card fade-in"><div class="t-label" style="color:var(--text-dim);margin-bottom:8px">Savings Rate</div><div class="t-big-number">${savingsRate}%</div><div style="font-size:12px;color:${savingsRate >= 20 ? 'var(--success)' : 'var(--error)'};margin-top:4px">${savingsRate >= 20 ? 'Healthy' : 'Needs improvement'}</div></div>
+              <div class="card fade-in stagger-1"><div class="t-label" style="color:var(--text-dim);margin-bottom:8px">Avg. Transaction</div><div class="t-big-number">${fmt(avgExpense)}</div><div style="font-size:12px;color:var(--text-dim);margin-top:4px">per expense</div></div>
+              <div class="card fade-in stagger-2"><div class="t-label" style="color:var(--text-dim);margin-bottom:8px">Top Category</div><div style="font-size:20px;font-weight:500;color:var(--text-primary);margin-top:4px">${topCat.info.name}</div><div style="font-size:12px;color:var(--error);margin-top:4px">${fmt(topCat.amount)} this month</div></div>
+              <div class="card fade-in stagger-3"><div class="t-label" style="color:var(--text-dim);margin-bottom:8px">Total Transactions</div><div class="t-big-number">${txns.length}</div><div style="font-size:12px;color:var(--text-dim);margin-top:4px">all time</div></div>
+            </div>
+            <div class="card-grid card-grid-2">
+              <div class="card fade-in stagger-2"><h2 style="font-size:16px;font-weight:500;color:var(--text-primary);margin-bottom:20px">Income vs Expenses (6 Months)</h2><canvas id="trendChart" height="250" style="width:100%"></canvas></div>
+              <div class="card fade-in stagger-3"><h2 style="font-size:16px;font-weight:500;color:var(--text-primary);margin-bottom:20px">Spending by Category</h2><canvas id="pieChart" height="250" style="width:100%"></canvas></div>
+            </div>
+            <div class="card fade-in stagger-4" style="margin-top:28px">
+              <h2 style="font-size:16px;font-weight:500;color:var(--text-primary);margin-bottom:20px">Category Breakdown — This Month</h2>
+              ${spending.length === 0 ? '<div class="empty-state"><p>No expenses this month</p></div>' :
+                spending.map((s, i) => {
+                  const total = spending.reduce((sum, x) => sum + x.amount, 0);
+                  const pct = total > 0 ? (s.amount / total * 100).toFixed(1) : 0;
+                  return `<div style="display:flex;align-items:center;gap:16px;padding:12px 0;${i < spending.length-1 ? 'border-bottom:1px solid var(--border-subtle)' : ''}">
+                    <div style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:center">
+                      <span class="material-symbols-outlined" style="font-size:18px;color:var(--text-muted)">${s.info.icon}</span>
+                    </div>
+                    <div style="flex:1">
+                      <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:14px;color:var(--text-primary)">${s.info.name}</span><span style="font-size:14px;font-weight:500;color:var(--text-primary)">${fmt(s.amount)}</span></div>
+                      <div class="progress"><div class="progress-fill" style="width:${pct}%"></div></div>
+                    </div>
+                    <span style="font-size:12px;color:var(--text-dim);min-width:40px;text-align:right">${pct}%</span>
+                  </div>`;
+                }).join('')}
+            </div>
+          </div>
+        </main>
+      `;
+
+      // Trend chart
+      const tc = document.getElementById('trendChart');
+      const tcCtx = tc.getContext('2d');
+      tc.width = tc.offsetWidth * 2; tc.height = 500; tcCtx.scale(2, 2);
+      const cw = tc.offsetWidth, ch = 250;
+      const maxVal = Math.max(...monthly.map(d => Math.max(d.income, d.expense)), 1);
+      const pad = { t: 20, r: 20, b: 40, l: 20 };
+      const plotW = cw - pad.l - pad.r, plotH = ch - pad.t - pad.b;
+      function drawLine(data, color, key) {
+        tcCtx.beginPath(); tcCtx.strokeStyle = color; tcCtx.lineWidth = 2;
+        data.forEach((d, i) => { const x = pad.l + (i / (data.length - 1)) * plotW; const y = pad.t + plotH - (d[key] / maxVal) * plotH; if (i === 0) tcCtx.moveTo(x, y); else tcCtx.lineTo(x, y); });
+        tcCtx.stroke();
+        data.forEach((d, i) => { const x = pad.l + (i / (data.length - 1)) * plotW; const y = pad.t + plotH - (d[key] / maxVal) * plotH; tcCtx.beginPath(); tcCtx.arc(x, y, 4, 0, Math.PI * 2); tcCtx.fillStyle = color; tcCtx.fill(); });
+      }
+      for (let i = 0; i <= 4; i++) { const y = pad.t + (i / 4) * plotH; tcCtx.strokeStyle = 'rgba(255,255,255,0.05)'; tcCtx.lineWidth = 1; tcCtx.beginPath(); tcCtx.moveTo(pad.l, y); tcCtx.lineTo(cw - pad.r, y); tcCtx.stroke(); }
+      drawLine(monthly, 'rgba(74,222,128,0.8)', 'income');
+      drawLine(monthly, 'rgba(255,107,107,0.8)', 'expense');
+      tcCtx.fillStyle = 'rgba(255,255,255,0.4)'; tcCtx.font = '11px Inter'; tcCtx.textAlign = 'center';
+      monthly.forEach((d, i) => { const x = pad.l + (i / (monthly.length - 1)) * plotW; tcCtx.fillText(d.label, x, ch - 10); });
+      tcCtx.fillStyle = 'rgba(74,222,128,0.8)'; tcCtx.fillRect(cw - 160, 8, 10, 10);
+      tcCtx.fillStyle = 'rgba(255,255,255,0.5)'; tcCtx.textAlign = 'left'; tcCtx.fillText('Income', cw - 145, 17);
+      tcCtx.fillStyle = 'rgba(255,107,107,0.8)'; tcCtx.fillRect(cw - 80, 8, 10, 10);
+      tcCtx.fillStyle = 'rgba(255,255,255,0.5)'; tcCtx.fillText('Expenses', cw - 65, 17);
+
+      // Pie chart
+      const pc = document.getElementById('pieChart');
+      const pcCtx = pc.getContext('2d');
+      pc.width = pc.offsetWidth * 2; pc.height = 500; pcCtx.scale(2, 2);
+      const pw = pc.offsetWidth, ph = 250;
+      const centerX = pw / 2 - 40, centerY = ph / 2 + 10, radius = Math.min(pw, ph) / 2 - 40;
+      const total = spending.reduce((s, x) => s + x.amount, 0);
+      const colors = ['rgba(255,255,255,0.7)', 'rgba(255,255,255,0.5)', 'rgba(255,255,255,0.35)', 'rgba(255,255,255,0.22)', 'rgba(255,255,255,0.12)', 'rgba(255,255,255,0.08)'];
+      let startAngle = -Math.PI / 2;
+      if (spending.length > 0) {
+        spending.forEach((s, i) => { const slice = (s.amount / total) * Math.PI * 2; pcCtx.beginPath(); pcCtx.moveTo(centerX, centerY); pcCtx.arc(centerX, centerY, radius, startAngle, startAngle + slice); pcCtx.closePath(); pcCtx.fillStyle = colors[i % colors.length]; pcCtx.fill(); pcCtx.strokeStyle = 'rgba(10,10,10,0.8)'; pcCtx.lineWidth = 2; pcCtx.stroke(); startAngle += slice; });
+        pcCtx.beginPath(); pcCtx.arc(centerX, centerY, radius * 0.55, 0, Math.PI * 2); pcCtx.fillStyle = 'rgba(10,10,10,0.9)'; pcCtx.fill();
+        pcCtx.fillStyle = '#fff'; pcCtx.font = '500 14px Inter'; pcCtx.textAlign = 'center'; pcCtx.fillText(fmt(total), centerX, centerY + 5);
+        spending.slice(0, 6).forEach((s, i) => { const lx = pw - 100, ly = 30 + i * 22; pcCtx.fillStyle = colors[i % colors.length]; pcCtx.fillRect(lx, ly, 10, 10); pcCtx.fillStyle = 'rgba(255,255,255,0.5)'; pcCtx.font = '11px Inter'; pcCtx.textAlign = 'left'; pcCtx.fillText(s.info.name.substring(0, 12), lx + 16, ly + 9); });
+      } else { pcCtx.fillStyle = 'rgba(255,255,255,0.2)'; pcCtx.font = '14px Inter'; pcCtx.textAlign = 'center'; pcCtx.fillText('No data', pw/2, ph/2); }
+    })();
+  </script>
+</body>
+</html>

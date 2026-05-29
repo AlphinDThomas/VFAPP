@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <title>Freddy | Your Financial Control Center</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+    rel="stylesheet" />
+  <link href="https://fonts.googleapis.com" rel="preconnect" />
+  <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@200;400;500;700&amp;family=JetBrains+Mono:wght@500&amp;display=swap"
+    rel="stylesheet" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+    rel="stylesheet" />
+  <style>
+    @font-face {
+      font-family: 'Geist';
+      src: url('https://cdn.jsdelivr.net/fontsource/fonts/geist-sans@latest/latin-200-normal.woff2') format('woff2');
+      font-weight: 200;
+    }
+
+    @font-face {
+      font-family: 'Geist';
+      src: url('https://cdn.jsdelivr.net/fontsource/fonts/geist-sans@latest/latin-300-normal.woff2') format('woff2');
+      font-weight: 300;
+    }
+  </style>
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "tertiary": "#ffffff",
+            "secondary-container": "#474746",
+            "on-secondary-fixed": "#1c1b1b",
+            "surface-variant": "#353535",
+            "on-tertiary-fixed": "#1b1c1c",
+            "primary-fixed-dim": "#c6c6c7",
+            "on-surface": "#e2e2e2",
+            "background": "#131313",
+            "secondary-fixed": "#e5e2e1",
+            "secondary": "#c8c6c5",
+            "on-tertiary": "#303030",
+            "surface-container-highest": "#353535",
+            "tertiary-container": "#e4e2e1",
+            "on-background": "#e2e2e2",
+            "inverse-on-surface": "#303030",
+            "outline": "#8e9192",
+            "on-secondary-fixed-variant": "#474746",
+            "surface-bright": "#393939",
+            "on-surface-variant": "#c4c7c8",
+            "surface-container-high": "#2a2a2a",
+            "error-container": "#93000a",
+            "on-error-container": "#ffdad6",
+            "on-primary-fixed": "#1a1c1c",
+            "primary-container": "#e2e2e2",
+            "on-secondary-container": "#b7b5b4",
+            "surface-container": "#1f1f1f",
+            "on-primary-fixed-variant": "#454747",
+            "tertiary-fixed": "#e4e2e1",
+            "on-error": "#690005",
+            "surface": "#131313",
+            "error": "#ffb4ab",
+            "surface-tint": "#c6c6c7",
+            "surface-container-lowest": "#0e0e0e",
+            "inverse-primary": "#5d5f5f",
+            "secondary-fixed-dim": "#c8c6c5",
+            "on-secondary": "#313030",
+            "on-primary-container": "#636565",
+            "outline-variant": "#444748",
+            "inverse-surface": "#e2e2e2",
+            "primary-fixed": "#e2e2e2",
+            "on-primary": "#2f3131",
+            "surface-container-low": "#1b1b1b",
+            "on-tertiary-container": "#656464",
+            "primary": "#ffffff",
+            "surface-dim": "#131313",
+            "tertiary-fixed-dim": "#c8c6c6",
+            "on-tertiary-fixed-variant": "#474747"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.125rem",
+            "lg": "0.25rem",
+            "xl": "0.5rem",
+            "full": "0.75rem"
+          },
+          "spacing": {
+            "margin-safe": "40px",
+            "container-max": "1440px",
+            "unit": "4px",
+            "section-gap": "120px",
+            "gutter": "24px"
+          },
+          "fontFamily": {
+            "body-base": ["Inter"],
+            "label-sm": ["JetBrains Mono"],
+            "headline-lg": ["Geist"],
+            "headline-lg-mobile": ["Geist"],
+            "display-xl": ["Geist"],
+            "title-md": ["Inter"]
+          },
+          "fontSize": {
+            "body-base": ["16px", { "lineHeight": "1.6", "letterSpacing": "0", "fontWeight": "400" }],
+            "label-sm": ["12px", { "lineHeight": "1", "letterSpacing": "0.1em", "fontWeight": "500" }],
+            "headline-lg": ["48px", { "lineHeight": "1.2", "letterSpacing": "0.03em", "fontWeight": "300" }],
+            "headline-lg-mobile": ["32px", { "lineHeight": "1.2", "letterSpacing": "0.02em", "fontWeight": "300" }],
+            "display-xl": ["72px", { "lineHeight": "1.1", "letterSpacing": "0.05em", "fontWeight": "200" }],
+            "title-md": ["24px", { "lineHeight": "1.4", "letterSpacing": "0.01em", "fontWeight": "500" }]
+          }
+        },
+      },
+    }
+  </script>
+  <style>
+    body {
+      background-color: #131313;
+      margin: 0;
+      overflow-x: hidden;
+      color: #e2e2e2;
+    }
+
+    .particle-canvas-container {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 100%;
+      height: 100vh;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    @media (min-width: 768px) {
+      .particle-canvas-container {
+        width: 60%;
+      }
+    }
+
+    .glow-hover:hover {
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.4);
+    }
+
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+    }
+  </style>
+</head>
+
+<body class="font-body-base text-body-base bg-background selection:bg-primary selection:text-background">
+  <!-- TopNavBar -->
+  <nav
+    class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-margin-safe py-6 max-w-container-max mx-auto backdrop-blur-xl bg-background/5">
+    <div class="flex items-center gap-2">
+      <span class="font-headline-lg text-title-md tracking-tighter text-primary">Freddy</span>
+    </div>
+    <div class="hidden md:flex items-center gap-10">
+      <a class="text-on-surface-variant font-medium hover:text-primary transition-colors duration-300"
+        href="#">Dashboard</a>
+      <a class="text-on-surface-variant font-medium hover:text-primary transition-colors duration-300" href="#">Budgets</a>
+      <a class="text-on-surface-variant font-medium hover:text-primary transition-colors duration-300"
+        href="#">Investments</a>
+      <a class="text-on-surface-variant font-medium hover:text-primary transition-colors duration-300"
+        href="#">Insights</a>
+    </div>
+    <div class="flex items-center" id="auth-nav">
+      <a href="signin.html" id="auth-btn"
+        class="bg-primary text-on-primary px-6 py-2 text-label-sm font-label-sm uppercase tracking-widest transition-all Active:opacity-80 Active:scale-95 glow-hover inline-block no-underline">
+        Sign In
+      </a>
+    </div>
+  </nav>
+  <!-- Hero Section -->
+  <main class="relative min-h-screen flex items-center px-margin-safe z-10">
+    <!-- Particle Canvas Placeholder - To be handled by JS/Three.js -->
+    <div class="particle-canvas-container" id="canvas-wrapper">
+      <canvas class="w-full h-full" id="particle-sphere"></canvas>
+    </div>
+    <div class="max-w-xl w-full relative z-20 pt-20 md:pt-0">
+      <div class="mb-4">
+        <span class="font-label-sm text-label-sm text-primary/60 uppercase tracking-[0.3em]">Welcome, Freddy</span>
+      </div>
+      <h1 class="font-display-xl text-display-xl mb-8 leading-none md:leading-tight">
+        Manage Your <br />Finances Smarter.
+      </h1>
+      <p class="font-body-base text-body-base text-on-surface-variant max-w-md mb-12 opacity-80">
+        Track spending, savings, and investments in one place. Your financial control center — monitor
+        transactions, budgets, and insights effortlessly.
+      </p>
+      <div class="flex flex-col sm:flex-row items-start sm:items-center gap-8">
+        <a href="signin.html"
+          class="bg-primary text-on-primary px-10 py-4 font-label-sm text-label-sm uppercase tracking-widest glow-hover transition-all duration-300 inline-block no-underline">
+          Open Dashboard
+        </a>
+        <a class="group flex items-center gap-3 font-label-sm text-label-sm uppercase tracking-widest text-on-surface hover:text-primary transition-all"
+          href="#">
+          Explore Features
+          <span
+            class="material-symbols-outlined text-[18px] group-hover:translate-x-1 transition-transform">arrow_forward</span>
+        </a>
+      </div>
+    </div>
+  </main>
+  <!-- Bento Grid / Features Section -->
+  <section class="relative py-section-gap px-margin-safe bg-background z-10">
+    <div class="grid grid-cols-1 md:grid-cols-12 gap-gutter max-w-container-max mx-auto">
+      <!-- Bento Item 1 -->
+      <div
+        class="md:col-span-8 group relative overflow-hidden bg-white/[0.03] backdrop-blur-2xl border border-white/10 p-10 h-[400px] flex flex-col justify-end">
+        <div class="absolute top-0 right-0 p-10 opacity-20 group-hover:opacity-100 transition-opacity">
+          <span class="material-symbols-outlined text-[120px] font-thin">monitoring</span>
+        </div>
+        <div class="relative z-10">
+          <h3 class="font-headline-lg text-title-md mb-4">Smart Spending Analytics</h3>
+          <p class="text-on-surface-variant max-w-md">Intelligent categorisation and real-time tracking across all your
+            accounts. See exactly where your money goes with zero manual effort.</p>
+        </div>
+      </div>
+      <!-- Bento Item 2 -->
+      <div
+        class="md:col-span-4 group relative bg-white/[0.03] backdrop-blur-2xl border border-white/10 p-10 h-[400px] flex flex-col justify-between">
+        <div class="w-12 h-12 rounded-full border border-white/20 flex items-center justify-center">
+          <span class="material-symbols-outlined text-primary">savings</span>
+        </div>
+        <div>
+          <h3 class="font-headline-lg text-title-md mb-4">Savings Goals</h3>
+          <p class="text-on-surface-variant">Set targets and watch your progress grow. Automated nudges keep you
+            on track to hit every milestone.</p>
+        </div>
+      </div>
+      <!-- Bento Item 3 -->
+      <div
+        class="md:col-span-4 group relative bg-white/[0.03] backdrop-blur-2xl border border-white/10 p-10 h-[400px] flex flex-col justify-between">
+        <div class="w-12 h-12 rounded-full border border-white/20 flex items-center justify-center">
+          <span class="material-symbols-outlined text-primary">lock</span>
+        </div>
+        <div>
+          <h3 class="font-headline-lg text-title-md mb-4">Bank-Grade Security</h3>
+          <p class="text-on-surface-variant">256-bit encryption protects every transaction and data point. Your finances stay private, always.</p>
+        </div>
+      </div>
+      <!-- Bento Item 4 -->
+      <div
+        class="md:col-span-8 group relative overflow-hidden bg-white/[0.03] backdrop-blur-2xl border border-white/10 p-10 h-[400px]">
+        <div class="flex h-full gap-8 items-center">
+          <div class="w-1/2">
+            <h3 class="font-headline-lg text-title-md mb-4">Investment Portfolio</h3>
+            <p class="text-on-surface-variant">A unified view of stocks, funds, and assets — designed for clarity and
+              confident decision-making.</p>
+          </div>
+          <div class="w-1/2 relative h-full">
+            <img class="absolute inset-0 w-full h-full object-cover opacity-50 grayscale mix-blend-screen"
+              data-alt="A macro close-up of flowing dark liquid glass and light rays reflecting off smooth surfaces in a high-contrast black and white photography style. The image captures organic curves and sharp highlights that evoke a sense of futuristic technology and sophisticated minimalism. The mood is cinematic and serene, consistent with a high-end luxury tech aesthetic."
+              src="https://lh3.googleusercontent.com/aida-public/AB6AXuCazfx1OPenzT1yn6SVuzyKIroTqx6SCek8kaoSAxHI-gAkxQ8cYg7n6-Hp-CRXRjECh-obGvq7HnfL02gxs5bxtn95TzfZ_UJqNusxg0pNcLDBJkwmOtBr5ar4wiNqqakeJnNFOzCmrqQddKVJq4sRJz9BwFOW4o2PRaj2uqo2kHCd97y0NRlywqMbkDg9Im5JT7nJ7XIzsB61qnO4Xq3FWWF2BdC37hZGJO5nKLjTgWmlT4lHBfXWuMxE4L-sei8_3WburwXhKka6" />
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- Footer -->
+  <footer
+    class="relative px-margin-safe py-8 flex flex-col md:flex-row justify-between items-center gap-6 z-10 bg-background">
+    <div class="flex items-center gap-4">
+      <span class="font-headline-lg text-label-sm text-primary">Freddy</span>
+      <span class="font-label-sm text-label-sm uppercase tracking-widest text-on-surface-variant opacity-40">© 2026
+        Freddy Finance. All rights reserved.</span>
+    </div>
+    <div class="flex items-center gap-8">
+      <a class="font-label-sm text-label-sm uppercase tracking-widest text-on-surface-variant hover:text-primary transition-all"
+        href="#">Privacy Policy</a>
+      <a class="font-label-sm text-label-sm uppercase tracking-widest text-on-surface-variant hover:text-primary transition-all"
+        href="#">Terms of Service</a>
+      <a class="font-label-sm text-label-sm uppercase tracking-widest text-on-surface-variant hover:text-primary transition-all"
+        href="#">Support</a>
+    </div>
+  </footer>
+  <!-- Three.js Implementation -->
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.160.0/build/three.module.js"
+      }
+    }
+  </script>
+  <script type="module">
+    import * as THREE from 'three';
+
+    const canvas = document.getElementById('particle-sphere');
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, canvas.clientWidth / canvas.clientHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+
+    renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+    const particlesCount = 8000;
+    const posArray = new THREE.BufferAttribute(new Float32Array(particlesCount * 3), 3);
+    const originalPos = new Float32Array(particlesCount * 3);
+
+    for (let i = 0; i < particlesCount; i++) {
+      // Sphere mapping
+      const phi = Math.acos(-1 + (2 * i) / particlesCount);
+      const theta = Math.sqrt(particlesCount * Math.PI) * phi;
+
+      const r = 2.5;
+      const x = r * Math.cos(theta) * Math.sin(phi);
+      const y = r * Math.sin(theta) * Math.sin(phi);
+      const z = r * Math.cos(phi);
+
+      posArray.setXYZ(i, x, y, z);
+      originalPos[i * 3] = x;
+      originalPos[i * 3 + 1] = y;
+      originalPos[i * 3 + 2] = z;
+    }
+
+    const particlesGeometry = new THREE.BufferGeometry();
+    particlesGeometry.setAttribute('position', posArray);
+
+    const particlesMaterial = new THREE.PointsMaterial({
+      size: 0.008,
+      color: 0xffffff,
+      transparent: true,
+      opacity: 0.8,
+      blending: THREE.AdditiveBlending
+    });
+
+    const particlesMesh = new THREE.Points(particlesGeometry, particlesMaterial);
+    scene.add(particlesMesh);
+
+    camera.position.z = 5;
+
+    let mouseX = 0;
+    let mouseY = 0;
+    let targetX = 0;
+    let targetY = 0;
+
+    window.addEventListener('mousemove', (e) => {
+      targetX = (e.clientX / window.innerWidth - 0.5) * 4;
+      targetY = (e.clientY / window.innerHeight - 0.5) * -4;
+    });
+
+    const clock = new THREE.Clock();
+
+    const animate = () => {
+      const elapsedTime = clock.getElapsedTime();
+
+      // Smoothly update mouse interaction
+      mouseX += (targetX - mouseX) * 0.05;
+      mouseY += (targetY - mouseY) * 0.05;
+
+      // Deformation logic
+      const positions = particlesGeometry.attributes.position.array;
+
+      for (let i = 0; i < particlesCount; i++) {
+        const i3 = i * 3;
+        const x = originalPos[i3];
+        const y = originalPos[i3 + 1];
+        const z = originalPos[i3 + 2];
+
+        // Breathing animation
+        const pulse = 1 + Math.sin(elapsedTime * 0.5 + i * 0.01) * 0.03;
+
+        // Interaction warp
+        const dx = x - mouseX;
+        const dy = y - mouseY;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        const force = Math.max(0, 1.2 - dist) * 0.2;
+
+        positions[i3] = x * pulse + (dx / dist) * force;
+        positions[i3 + 1] = y * pulse + (dy / dist) * force;
+        positions[i3 + 2] = z * pulse;
+      }
+
+      particlesGeometry.attributes.position.needsUpdate = true;
+
+      particlesMesh.rotation.y = elapsedTime * 0.05;
+      particlesMesh.rotation.x = elapsedTime * 0.02;
+
+      renderer.render(scene, camera);
+      requestAnimationFrame(animate);
+    };
+
+    window.addEventListener('resize', () => {
+      const width = canvas.parentElement.clientWidth;
+      const height = canvas.parentElement.clientHeight;
+      camera.aspect = width / height;
+      camera.updateProjectionMatrix();
+      renderer.setSize(width, height);
+    });
+
+    animate();
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-client.js"></script>
+  <script>
+    (async () => {
+      try {
+        const { data: { session } } = await _supabase.auth.getSession();
+        if (session) {
+          const btn = document.getElementById('auth-btn');
+          btn.href = 'dashboard.html';
+          btn.textContent = 'Dashboard';
+        }
+      } catch (e) { /* ignore - just show sign in */ }
+    })();
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Freddy | Budget Management</title>
+  <link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin href="https://fonts.gstatic.com" rel="preconnect"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <link href="styles.css" rel="stylesheet"/>
+</head>
+<body>
+  <div class="app-layout" id="app"><div style="display:flex;align-items:center;justify-content:center;min-height:100vh;width:100%;color:var(--text-dim)">Loading...</div></div>
+  <div class="modal-overlay" id="modal-overlay"><div class="modal" id="modal-content"></div></div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-client.js"></script>
+  <script src="data.js"></script>
+  <script>
+    (async () => {
+      if (!(await checkAuth())) return;
+      await render();
+    })();
+
+    async function render() {
+      const app = document.getElementById('app');
+      const fmt = FreddyData.formatCurrency;
+      const budgets = await FreddyData.getBudgetSpending();
+      const totalBudget = budgets.reduce((s, b) => s + b.limit, 0);
+      const totalSpent = budgets.reduce((s, b) => s + b.spent, 0);
+
+      app.innerHTML = `
+        ${buildSidebar('budgets')}
+        <main class="main-content">
+          ${buildTopbar('Budgets')}
+          <div class="page-content">
+            <div class="page-header">
+              <h1>Budget Management</h1>
+              <button class="btn btn-primary btn-sm" onclick="openAddBudget()"><span class="material-symbols-outlined" style="font-size:14px">add</span> New Budget</button>
+            </div>
+            <div class="card-grid card-grid-3" style="margin-bottom:28px">
+              <div class="card fade-in"><div class="t-label" style="color:var(--text-dim);margin-bottom:8px">Total Budget</div><div class="t-big-number">${fmt(totalBudget)}</div><div style="font-size:12px;color:var(--text-dim);margin-top:4px">per month</div></div>
+              <div class="card fade-in stagger-1"><div class="t-label" style="color:var(--text-dim);margin-bottom:8px">Total Spent</div><div class="t-big-number">${fmt(totalSpent)}</div><div class="progress" style="margin-top:8px"><div class="progress-fill ${totalBudget > 0 && totalSpent/totalBudget > 0.9 ? 'danger' : totalBudget > 0 && totalSpent/totalBudget > 0.7 ? 'warning' : ''}" style="width:${totalBudget > 0 ? Math.min(totalSpent/totalBudget*100,100) : 0}%"></div></div></div>
+              <div class="card fade-in stagger-2"><div class="t-label" style="color:var(--text-dim);margin-bottom:8px">Remaining</div><div class="t-big-number" style="color:${totalBudget-totalSpent >= 0 ? 'var(--success)' : 'var(--error)'}">${fmt(totalBudget - totalSpent)}</div><div style="font-size:12px;color:var(--text-dim);margin-top:4px">${totalBudget > 0 ? Math.round((1-totalSpent/totalBudget)*100) : 0}% left</div></div>
+            </div>
+            <div class="card" style="padding:0;overflow:hidden">
+              ${budgets.length === 0 ? '<div class="empty-state"><span class="material-symbols-outlined">account_balance_wallet</span><p>No budgets set. Create one to start tracking!</p></div>' : `
+              <table>
+                <thead><tr><th>Category</th><th>Spent</th><th>Budget</th><th>Progress</th><th>Status</th><th style="width:80px"></th></tr></thead>
+                <tbody>
+                  ${budgets.map(b => {
+                    const pct = b.limit > 0 ? Math.round(b.spent / b.limit * 100) : 0;
+                    const status = pct >= 100 ? 'Over' : pct >= 80 ? 'Warning' : 'On Track';
+                    const statusColor = pct >= 100 ? 'var(--error)' : pct >= 80 ? '#f59e0b' : 'var(--success)';
+                    return `<tr>
+                      <td><div style="display:flex;align-items:center;gap:10px"><span class="material-symbols-outlined" style="font-size:18px;color:var(--text-muted)">${b.icon}</span><span style="color:var(--text-primary)">${b.categoryName}</span></div></td>
+                      <td style="color:var(--text-primary);font-weight:500">${fmt(b.spent)}</td>
+                      <td>${fmt(b.limit)}</td>
+                      <td style="min-width:140px"><div class="progress"><div class="progress-fill ${pct >= 100 ? 'danger' : pct >= 80 ? 'warning' : ''}" style="width:${Math.min(pct,100)}%"></div></div><div style="font-size:11px;color:var(--text-dim);margin-top:4px">${pct}%</div></td>
+                      <td><span style="font-size:12px;font-weight:500;color:${statusColor}">${status}</span></td>
+                      <td><div style="display:flex;gap:4px"><button class="btn-icon" onclick="openEditBudget('${b.id}',${b.limit},'${b.categoryName}')" title="Edit"><span class="material-symbols-outlined" style="font-size:16px">edit</span></button><button class="btn-icon" onclick="delBudget('${b.id}')" title="Delete"><span class="material-symbols-outlined" style="font-size:16px">delete</span></button></div></td>
+                    </tr>`;
+                  }).join('')}
+                </tbody>
+              </table>`}
+            </div>
+          </div>
+        </main>
+      `;
+    }
+
+    function openModal(html) { document.getElementById('modal-content').innerHTML = html; document.getElementById('modal-overlay').classList.add('open'); }
+    function closeModal() { document.getElementById('modal-overlay').classList.remove('open'); }
+    document.getElementById('modal-overlay').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal(); });
+
+    async function openAddBudget() {
+      const existing = (await FreddyData.getBudgets()).map(b => b.category);
+      const available = FreddyData.EXPENSE_CATEGORIES.filter(c => !existing.includes(c.id));
+      if (available.length === 0) { showToast('All categories have budgets', 'error'); return; }
+      openModal(`
+        <div class="modal-title">New Budget</div>
+        <form id="budget-form" novalidate>
+          <div class="form-group"><label class="form-label">Category</label><select class="form-select" id="b-cat" required>${available.map(c => `<option value="${c.id}">${c.name}</option>`).join('')}</select></div>
+          <div class="form-group"><label class="form-label">Monthly Limit</label><input class="form-input" id="b-limit" type="number" min="1" placeholder="0.00" required/></div>
+          <div class="form-actions"><button type="submit" class="btn btn-primary" style="flex:1">Create Budget</button><button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button></div>
+        </form>
+      `);
+      document.getElementById('budget-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const category = document.getElementById('b-cat').value;
+        const limit = parseFloat(document.getElementById('b-limit').value);
+        if (!category || !limit || limit <= 0) { showToast('Fill all fields correctly', 'error'); return; }
+        await FreddyData.addBudget({ category, limit, period: 'monthly' });
+        closeModal(); showToast('Budget created!'); await render();
+      });
+    }
+
+    function openEditBudget(id, currentLimit, name) {
+      openModal(`
+        <div class="modal-title">Edit "${name}" Budget</div>
+        <form id="edit-form" novalidate>
+          <div class="form-group"><label class="form-label">Monthly Limit</label><input class="form-input" id="e-limit" type="number" min="1" value="${currentLimit}" required/></div>
+          <div class="form-actions"><button type="submit" class="btn btn-primary" style="flex:1">Update</button><button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button></div>
+        </form>
+      `);
+      document.getElementById('edit-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const limit = parseFloat(document.getElementById('e-limit').value);
+        if (!limit || limit <= 0) { showToast('Enter a valid limit', 'error'); return; }
+        await FreddyData.updateBudget(id, { limit });
+        closeModal(); showToast('Budget updated!'); await render();
+      });
+    }
+
+    async function delBudget(id) { if (confirm('Delete this budget?')) { await FreddyData.deleteBudget(id); showToast('Budget deleted'); await render(); } }
+  </script>
+</body>
+</html>

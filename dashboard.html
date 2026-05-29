@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Freddy | Dashboard</title>
+  <link href="https://fonts.googleapis.com" rel="preconnect"/>
+  <link crossorigin href="https://fonts.gstatic.com" rel="preconnect"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <link href="styles.css" rel="stylesheet"/>
+</head>
+<body>
+  <div class="app-layout" id="app"><div style="display:flex;align-items:center;justify-content:center;min-height:100vh;width:100%;color:var(--text-dim)">Loading...</div></div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-client.js"></script>
+  <script src="data.js"></script>
+  <script>
+    (async () => {
+      if (!(await checkAuth())) return;
+
+      const app = document.getElementById('app');
+      const stats = await FreddyData.getTransactionStats();
+      const recent = (await FreddyData.getTransactions()).slice(0, 7);
+      const spending = (await FreddyData.getSpendingByCategory()).slice(0, 5);
+      const fmt = FreddyData.formatCurrency;
+
+      app.innerHTML = `
+        ${buildSidebar('dashboard')}
+        <main class="main-content">
+          ${buildTopbar('Dashboard')}
+          <div class="page-content">
+            <div class="card-grid card-grid-4" style="margin-bottom:28px">
+              <div class="card fade-in stagger-1">
+                <div class="stat-label t-label" style="color:var(--text-dim)">Total Balance</div>
+                <div class="stat-value t-big-number">${fmt(stats.balance)}</div>
+                <div class="stat-change up"><span class="material-symbols-outlined" style="font-size:16px">trending_up</span> All time</div>
+              </div>
+              <div class="card fade-in stagger-2">
+                <div class="stat-label t-label" style="color:var(--text-dim)">Income this month</div>
+                <div class="stat-value t-big-number">${fmt(stats.thisMonthIncome)}</div>
+                <div class="stat-change ${stats.incomeChange >= 0 ? 'up' : 'down'}"><span class="material-symbols-outlined" style="font-size:16px">${stats.incomeChange >= 0 ? 'trending_up' : 'trending_down'}</span> ${Math.abs(stats.incomeChange)}% vs last month</div>
+              </div>
+              <div class="card fade-in stagger-3">
+                <div class="stat-label t-label" style="color:var(--text-dim)">Expenses this month</div>
+                <div class="stat-value t-big-number">${fmt(stats.thisMonthExpense)}</div>
+                <div class="stat-change ${stats.expenseChange <= 0 ? 'up' : 'down'}"><span class="material-symbols-outlined" style="font-size:16px">${stats.expenseChange <= 0 ? 'trending_down' : 'trending_up'}</span> ${Math.abs(stats.expenseChange)}% vs last month</div>
+              </div>
+              <div class="card fade-in stagger-4">
+                <div class="stat-label t-label" style="color:var(--text-dim)">Net this month</div>
+                <div class="stat-value t-big-number">${fmt(stats.thisMonthIncome - stats.thisMonthExpense)}</div>
+                <div class="stat-change ${stats.thisMonthIncome - stats.thisMonthExpense >= 0 ? 'up' : 'down'}"><span class="material-symbols-outlined" style="font-size:16px">${stats.thisMonthIncome - stats.thisMonthExpense >= 0 ? 'savings' : 'warning'}</span> ${stats.thisMonthIncome - stats.thisMonthExpense >= 0 ? 'Saving' : 'Overspending'}</div>
+              </div>
+            </div>
+            <div style="display:flex;gap:12px;margin-bottom:28px" class="fade-in stagger-2">
+              <a href="add-expense.html" class="btn btn-primary"><span class="material-symbols-outlined" style="font-size:16px">remove</span> Add Expense</a>
+              <a href="add-income.html" class="btn btn-secondary"><span class="material-symbols-outlined" style="font-size:16px">add</span> Add Income</a>
+            </div>
+            <div class="card-grid card-grid-2">
+              <div class="card fade-in stagger-3">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+                  <h2 style="font-size:16px;font-weight:500;color:var(--text-primary)">Recent Transactions</h2>
+                  <a href="transactions.html" class="t-label" style="font-size:11px;color:var(--text-dim)">View All →</a>
+                </div>
+                ${recent.length === 0 ? '<div class="empty-state"><span class="material-symbols-outlined">receipt_long</span><p>No transactions yet. Add your first one!</p></div>' :
+                  recent.map(t => {
+                    const isIncome = t.type === 'income';
+                    const cats = isIncome ? FreddyData.INCOME_SOURCES : FreddyData.EXPENSE_CATEGORIES;
+                    const cat = cats.find(c => c.id === t.category) || { icon: 'more_horiz', name: t.category };
+                    return `<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border-subtle)">
+                      <div style="display:flex;align-items:center;gap:12px">
+                        <div style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.05);display:flex;align-items:center;justify-content:center">
+                          <span class="material-symbols-outlined" style="font-size:18px;color:var(--text-muted)">${cat.icon}</span>
+                        </div>
+                        <div>
+                          <div style="font-size:14px;color:var(--text-primary)">${t.description}</div>
+                          <div style="font-size:12px;color:var(--text-dim)">${FreddyData.formatDate(t.date)}</div>
+                        </div>
+                      </div>
+                      <div style="font-size:14px;font-weight:500;color:${isIncome ? 'var(--success)' : 'var(--error)'}">
+                        ${isIncome ? '+' : '-'}${fmt(t.amount)}
+                      </div>
+                    </div>`;
+                  }).join('')}
+              </div>
+              <div class="card fade-in stagger-4">
+                <h2 style="font-size:16px;font-weight:500;color:var(--text-primary);margin-bottom:20px">Top Spending Categories</h2>
+                ${spending.length === 0 ? '<div class="empty-state"><p>No expenses this month</p></div>' :
+                  spending.map(s => {
+                    const maxSpend = spending[0].amount;
+                    const pct = (s.amount / maxSpend * 100).toFixed(0);
+                    return `<div style="margin-bottom:16px">
+                      <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+                        <div style="display:flex;align-items:center;gap:8px"><span class="material-symbols-outlined" style="font-size:16px;color:var(--text-muted)">${s.info.icon}</span><span style="font-size:13px;color:var(--text-secondary)">${s.info.name}</span></div>
+                        <span style="font-size:13px;font-weight:500;color:var(--text-primary)">${fmt(s.amount)}</span>
+                      </div>
+                      <div class="progress"><div class="progress-fill" style="width:${pct}%"></div></div>
+                    </div>`;
+                  }).join('')}
+                <a href="analytics.html" class="t-label" style="font-size:11px;color:var(--text-dim);display:block;text-align:center;margin-top:16px">Full Analytics →</a>
+              </div>
+            </div>
+            <div class="card fade-in stagger-4" style="margin-top:28px">
+              <h2 style="font-size:16px;font-weight:500;color:var(--text-primary);margin-bottom:20px">6-Month Overview</h2>
+              <canvas id="miniChart" height="200" style="width:100%"></canvas>
+            </div>
+          </div>
+        </main>
+      `;
+
+      // ── Mini bar chart ──────────────────────────────────────
+      const canvas = document.getElementById('miniChart');
+      const ctx = canvas.getContext('2d');
+      canvas.width = canvas.offsetWidth * 2; canvas.height = 400;
+      ctx.scale(2, 2);
+      const cw = canvas.offsetWidth, ch = 200;
+      const data = await FreddyData.getMonthlyTotals(6);
+      const maxVal = Math.max(...data.map(d => Math.max(d.income, d.expense)), 1);
+      const barW = cw / data.length / 3;
+      const padding = 40;
+      data.forEach((d, i) => {
+        const x = padding + (i * (cw - padding * 2)) / (data.length - 0.5);
+        const incH = (d.income / maxVal) * (ch - 60);
+        const expH = (d.expense / maxVal) * (ch - 60);
+        ctx.fillStyle = 'rgba(74, 222, 128, 0.5)';
+        ctx.fillRect(x, ch - 30 - incH, barW - 2, incH);
+        ctx.fillStyle = 'rgba(255, 107, 107, 0.5)';
+        ctx.fillRect(x + barW, ch - 30 - expH, barW - 2, expH);
+        ctx.fillStyle = 'rgba(255,255,255,0.4)'; ctx.font = '11px Inter'; ctx.textAlign = 'center';
+        ctx.fillText(d.label, x + barW, ch - 10);
+      });
+      ctx.fillStyle = 'rgba(74,222,128,0.7)'; ctx.fillRect(cw - 160, 8, 10, 10);
+      ctx.fillStyle = 'rgba(255,255,255,0.5)'; ctx.font = '11px Inter'; ctx.textAlign = 'left'; ctx.fillText('Income', cw - 145, 17);
+      ctx.fillStyle = 'rgba(255,107,107,0.7)'; ctx.fillRect(cw - 90, 8, 10, 10);
+      ctx.fillStyle = 'rgba(255,255,255,0.5)'; ctx.fillText('Expenses', cw - 75, 17);
+    })();
+  </script>
+</body>
+</html>
