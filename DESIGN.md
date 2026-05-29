@@ -119,7 +119,7 @@ The entire interface is **strictly monochromatic** (pure black + pure white). De
 
 | File               | Screen Title                      | Status |
 |--------------------|-----------------------------------|--------|
-| `herosection.html` | Aetheris — Interactive Particle Sphere (Landing/Hero) | ✅ Done |
+| `index.html` | Aetheris — Interactive Particle Sphere (Landing/Hero) | ✅ Done |
 | `signin.html`      | Fam — Sign In                  | ✅ Done |
 
 ### 4.2 Screens To Build (from Stitch)
@@ -140,7 +140,7 @@ The entire interface is **strictly monochromatic** (pure black + pure white). De
 ## 5. Navigation Map
 
 ```
-herosection.html (Landing Page)
+index.html (Landing Page)
   └── [Sign In] → signin.html
                     └── [Auth Success] → dashboard.html
 
@@ -157,7 +157,7 @@ dashboard.html (Main Hub)
   │   ├── [+ Add Expense] → add-expense.html
   │   └── [+ Add Income]  → add-income.html
   │
-  └── [Sign Out] → herosection.html (clear session)
+  └── [Sign Out] → index.html (clear session)
 ```
 
 ---
@@ -168,7 +168,7 @@ dashboard.html (Main Hub)
 Fam FINANCE APP/
 ├── DESIGN.md                ← This file
 ├── README.md
-├── herosection.html         ✅ Landing page with 3D particle sphere
+├── index.html         ✅ Landing page with 3D particle sphere
 ├── signin.html              ✅ Authentication page (hardcoded: Fam/Fam)
 ├── dashboard.html           🔲 Main dashboard
 ├── transactions.html        🔲 Transaction history
@@ -184,7 +184,7 @@ Fam FINANCE APP/
 
 ## 7. Shared Layout (Dashboard Pages)
 
-All dashboard pages (everything except `herosection.html` and `signin.html`) share a common layout:
+All dashboard pages (everything except `index.html` and `signin.html`) share a common layout:
 
 ```
 ┌─────────────────────────────────────────────────────┐
@@ -221,7 +221,7 @@ All dashboard pages (everything except `herosection.html` and `signin.html`) sha
 3. Redirects to `dashboard.html`
 4. All dashboard pages check `sessionStorage.getItem('Fam_authenticated')`
    - If not authenticated → redirect to `signin.html`
-5. Sign out → `sessionStorage.clear()` → redirect to `herosection.html`
+5. Sign out → `sessionStorage.clear()` → redirect to `index.html`
 
 ---
 
@@ -240,7 +240,7 @@ All dashboard pages (everything except `herosection.html` and `signin.html`) sha
 ## 10. Implementation Notes
 
 - **No framework** — Pure HTML + CSS + vanilla JS (each page is a standalone `.html` file)
-- **Tailwind CDN** used in `herosection.html` — dashboard pages will use **vanilla CSS** with CSS custom properties for the design tokens (cleaner, no CDN dependency for inner pages)
+- **Tailwind CDN** used in `index.html` — dashboard pages will use **vanilla CSS** with CSS custom properties for the design tokens (cleaner, no CDN dependency for inner pages)
 - **Icons:** Material Symbols Outlined (Google Fonts CDN)
 - **Fonts:** Geist (Vercel CDN), Inter + JetBrains Mono (Google Fonts)
 - **Data:** All financial data is hardcoded/mock (no backend)
